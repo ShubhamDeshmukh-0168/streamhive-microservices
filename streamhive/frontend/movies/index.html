@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><title>StreamHive Movies</title>
+<style>
+  body{margin:0;background:#0a0a0a;color:#eee;font-family:Arial,sans-serif;}
+  header{padding:20px 40px;background:#140000;display:flex;justify-content:space-between;align-items:center;}
+  header h1{color:#e11d48;margin:0;}
+  a.back{color:#999;text-decoration:none;font-size:13px;}
+  .banner{height:280px;background:linear-gradient(to right,#1a0000cc,transparent),url('https://picsum.photos/seed/movies/1200/280') center/cover;display:flex;align-items:center;padding-left:40px;}
+  .banner h2{font-size:34px;max-width:480px;}
+  .row{padding:30px 40px;}
+  .row h3{border-left:4px solid #e11d48;padding-left:10px;}
+  .carousel{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px;}
+  .poster{flex:0 0 160px;background:#1a1a1a;border-radius:8px;overflow:hidden;cursor:pointer;transition:.2s;}
+  .poster:hover{transform:scale(1.05);}
+  .poster img{width:100%;height:220px;object-fit:cover;display:block;}
+  .poster p{margin:8px;font-size:13px;}
+  button{background:#e11d48;color:#fff;border:none;padding:6px 10px;border-radius:6px;font-size:12px;margin:0 8px 8px;cursor:pointer;}
+</style>
+</head>
+<body>
+<header><h1>🎬 StreamHive Movies</h1><a class="back" href="/">← Back to Hive</a></header>
+<div class="banner"><h2>New this week: Midnight Horizon, a sci-fi thriller.</h2></div>
+<div class="row">
+  <h3>Trending Now</h3>
+  <div class="carousel" id="trending"></div>
+</div>
+<script>
+const movies = [
+  {id:"mv1", title:"Midnight Horizon", price:149},
+  {id:"mv2", title:"Crimson Tide City", price:99},
+  {id:"mv3", title:"The Last Algorithm", price:129},
+  {id:"mv4", title:"Echoes of Tomorrow", price:149},
+  {id:"mv5", title:"Velvet Skyline", price:79},
+];
+const el = document.getElementById('trending');
+movies.forEach(m => {
+  el.innerHTML += `<div class="poster">
+    <img src="https://picsum.photos/seed/${m.id}/160/220" />
+    <p>${m.title}<br>Rs. ${m.price}</p>
+    <button onclick="addToWatchlist('${m.id}','${m.title}',${m.price})">+ Watchlist</button>
+  </div>`;
+});
+function addToWatchlist(id, title, price){
+  const email = localStorage.getItem('sh_email') || prompt('Enter your email to continue:');
+  if(!email) return;
+  localStorage.setItem('sh_email', email);
+  fetch('/api/watchlist/items', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email, item_id:id, item_title:title, price, category:'movies'})
+  }).then(r=>r.json()).then(d=>alert(d.message || d.error));
+}
+</script>
+</body>
+</html>

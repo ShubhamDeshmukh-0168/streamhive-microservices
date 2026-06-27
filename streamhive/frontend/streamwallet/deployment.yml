@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: streamwallet-deployment
+  labels:
+    app: streamwallet
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: streamwallet
+  template:
+    metadata:
+      labels:
+        app: streamwallet
+    spec:
+      containers:
+        - name: streamwallet-container
+          image: 876042377013.dkr.ecr.us-west-2.amazonaws.com/streamhive-streamwallet:latest
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: streamwallet-service
+spec:
+  selector:
+    app: streamwallet
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

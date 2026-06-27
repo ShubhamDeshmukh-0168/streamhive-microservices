@@ -1,0 +1,66 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hive-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: home-service
+                port:
+                  number: 80
+
+          - path: /movies
+            pathType: Prefix
+            backend:
+              service:
+                name: movies-service
+                port:
+                  number: 80
+
+          - path: /music
+            pathType: Prefix
+            backend:
+              service:
+                name: music-service
+                port:
+                  number: 80
+
+          - path: /gaming
+            pathType: Prefix
+            backend:
+              service:
+                name: gaming-service
+                port:
+                  number: 80
+
+          - path: /food-delivery
+            pathType: Prefix
+            backend:
+              service:
+                name: food-delivery-service
+                port:
+                  number: 80
+
+          - path: /streamwallet
+            pathType: Prefix
+            backend:
+              service:
+                name: streamwallet-service
+                port:
+                  number: 80
+
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: core-api-service
+                port:
+                  number: 80

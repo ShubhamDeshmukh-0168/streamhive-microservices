@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: streamhive-backend
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/YOUR_USERNAME/streamhive.git   # <-- CHANGE: your GitHub repo URL
+    targetRevision: main                                        # <-- CHANGE: branch name if different
+    path: backend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: microservices                                    # <-- CHANGE: namespace if different
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

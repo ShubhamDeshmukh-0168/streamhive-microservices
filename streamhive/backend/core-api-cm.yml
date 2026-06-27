@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-api-config
+data:
+  DB_HOST: "hive-rds-endpoint.us-west-2.rds.amazonaws.com"
+  DB_USER: "admin"
+  DB_PASSWORD: "ChangeMe123!"
+  DB_NAME: "streamhive"
+  MAIL_SERVER: "smtp.gmail.com"
+  MAIL_PORT: "587"
+  MAIL_USERNAME: ""
+  MAIL_PASSWORD: ""
+  PORT: "5000"

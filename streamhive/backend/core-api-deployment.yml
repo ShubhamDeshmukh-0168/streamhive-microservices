@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-api-deployment
+  labels:
+    app: core-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: core-api
+  template:
+    metadata:
+      labels:
+        app: core-api
+    spec:
+      containers:
+        - name: core-api-container
+          image: 876042377013.dkr.ecr.us-west-2.amazonaws.com/streamhive-core-api:latest
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: core-api-config
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: core-api-service
+spec:
+  selector:
+    app: core-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+  type: ClusterIP

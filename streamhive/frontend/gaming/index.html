@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><title>StreamHive Gaming</title>
+<style>
+  body{margin:0;background:#06060f;color:#e6e6ff;font-family:'Courier New',monospace;}
+  header{padding:20px 40px;background:#0d0d1f;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2d2d5c;}
+  header h1{color:#00f0ff;margin:0;text-shadow:0 0 8px #00f0ff;}
+  a.back{color:#888;text-decoration:none;font-size:13px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;padding:40px;}
+  .card{background:#10102a;border:1px solid #2d2d5c;border-radius:6px;padding:14px;}
+  .card img{width:100%;border-radius:4px;height:160px;object-fit:cover;}
+  .card h4{color:#00f0ff;margin:10px 0 2px;font-size:14px;}
+  .card p{color:#9999cc;font-size:12px;margin:0;}
+  button{background:#ff00aa;color:#fff;border:none;padding:6px 10px;border-radius:4px;font-size:12px;margin-top:8px;cursor:pointer;}
+</style>
+</head>
+<body>
+<header><h1>🎮 StreamHive Gaming</h1><a class="back" href="/">← Back to Hive</a></header>
+<div class="grid" id="games"></div>
+<script>
+const games = [
+  {id:"gm1", title:"Nebula Raiders", price:399},
+  {id:"gm2", title:"Pixel Kingdoms", price:199},
+  {id:"gm3", title:"Hivecraft Online", price:0},
+  {id:"gm4", title:"Drift Legends X", price:299},
+];
+const el = document.getElementById('games');
+games.forEach(g => {
+  el.innerHTML += `<div class="card">
+    <img src="https://picsum.photos/seed/${g.id}/200/160" />
+    <h4>${g.title}</h4><p>${g.price === 0 ? 'Free to Play' : 'Rs. ' + g.price}</p>
+    <button onclick="addToWatchlist('${g.id}','${g.title}',${g.price})">+ Add</button>
+  </div>`;
+});
+function addToWatchlist(id, title, price){
+  const email = localStorage.getItem('sh_email') || prompt('Enter your email to continue:');
+  if(!email) return;
+  localStorage.setItem('sh_email', email);
+  fetch('/api/watchlist/items', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email, item_id:id, item_title:title, price, category:'gaming'})
+  }).then(r=>r.json()).then(d=>alert(d.message || d.error));
+}
+</script>
+</body>
+</html>

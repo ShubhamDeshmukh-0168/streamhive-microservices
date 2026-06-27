@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" /><title>StreamWallet</title>
+<style>
+  body{margin:0;background:#0d1117;color:#e6edf3;font-family:Arial,sans-serif;}
+  header{padding:20px 40px;background:#161b22;display:flex;justify-content:space-between;align-items:center;}
+  header h1{color:#58a6ff;margin:0;}
+  a.back{color:#888;text-decoration:none;font-size:13px;}
+  .panel{max-width:420px;margin:50px auto;background:#161b22;border-radius:12px;padding:30px;border:1px solid #30363d;}
+  .balance{font-size:36px;color:#58a6ff;margin-bottom:4px;}
+  label{display:block;margin:14px 0 6px;font-size:13px;color:#999;}
+  input,select{width:100%;padding:10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#fff;box-sizing:border-box;}
+  button{width:100%;background:#238636;color:#fff;border:none;padding:12px;border-radius:6px;margin-top:20px;cursor:pointer;font-weight:bold;}
+</style>
+</head>
+<body>
+<header><h1>💳 StreamWallet</h1><a class="back" href="/">← Back to Hive</a></header>
+<div class="panel">
+  <div class="balance">₹ Wallet</div>
+  <p style="color:#888;font-size:13px;">Top up your StreamHive wallet to pay for bookings instantly.</p>
+  <label>Email</label>
+  <input id="email" placeholder="you@example.com" />
+  <label>Amount (₹)</label>
+  <input id="amount" type="number" placeholder="500" />
+  <label>Payment Method</label>
+  <select id="method">
+    <option>UPI</option>
+    <option>Credit Card</option>
+    <option>Debit Card</option>
+    <option>Net Banking</option>
+  </select>
+  <button onclick="topUp()">Top Up Wallet</button>
+</div>
+<script>
+function topUp(){
+  const email = document.getElementById('email').value.trim();
+  const amount = parseFloat(document.getElementById('amount').value);
+  const payment_method = document.getElementById('method').value;
+  if(!email || !amount){ alert('Enter email and amount'); return; }
+  localStorage.setItem('sh_email', email);
+  fetch('/api/wallet/topups', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({email, amount, payment_method})
+  }).then(r=>r.json()).then(d=>alert(d.message || d.error));
+}
+</script>
+</body>
+</html>

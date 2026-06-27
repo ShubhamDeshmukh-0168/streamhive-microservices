@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>StreamHive</title>
+<style>
+  body { margin:0; font-family: 'Segoe UI', Arial, sans-serif; background:#0f0f1a; color:#f1f1f1; }
+  header { padding:24px 40px; display:flex; align-items:center; justify-content:space-between; background:#15152a; }
+  header h1 { color:#a855f7; margin:0; font-size:26px; }
+  nav a { color:#ccc; text-decoration:none; margin-left:20px; font-size:14px; }
+  nav a:hover { color:#a855f7; }
+  .hero { padding:60px 40px; background:linear-gradient(120deg,#1c1c2e,#2a1a3d); }
+  .hero h2 { font-size:38px; margin-bottom:10px; }
+  .hero p { color:#aaa; max-width:500px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:20px; padding:40px; }
+  .card { background:#1c1c2e; border-radius:12px; padding:20px; transition:.2s; cursor:pointer; }
+  .card:hover { transform:translateY(-4px); background:#26263d; }
+  .card .icon { font-size:32px; }
+  .card h3 { margin:10px 0 4px; }
+  .card p { color:#999; font-size:13px; margin:0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>🐝 StreamHive</h1>
+  <nav>
+    <a href="/movies">Movies</a>
+    <a href="/music">Music</a>
+    <a href="/gaming">Gaming</a>
+    <a href="/food-delivery">Food</a>
+    <a href="/streamwallet">Wallet</a>
+  </nav>
+</header>
+<section class="hero">
+  <h2>Everything you stream, order, and play — in one hive.</h2>
+  <p>Movies, music, games, food and rides — one account, one wallet, zero hassle.</p>
+</section>
+<section class="grid">
+  <div class="card" onclick="location.href='/movies'"><div class="icon">🎬</div><h3>Movies</h3><p>Rent & stream new releases</p></div>
+  <div class="card" onclick="location.href='/music'"><div class="icon">🎵</div><h3>Music</h3><p>Curated playlists & albums</p></div>
+  <div class="card" onclick="location.href='/gaming'"><div class="icon">🎮</div><h3>Gaming</h3><p>Cloud play, no downloads</p></div>
+  <div class="card" onclick="location.href='/food-delivery'"><div class="icon">🍔</div><h3>Food Delivery</h3><p>Order from local favorites</p></div>
+  <div class="card" onclick="location.href='/streamwallet'"><div class="icon">💳</div><h3>StreamWallet</h3><p>Top up & manage payments</p></div>
+</section>
+<script src="/image-fallback.js"></script>
+</body>
+</html>
