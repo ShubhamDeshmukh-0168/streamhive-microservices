@@ -6,7 +6,7 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/YOUR_USERNAME/streamhive.git   # <-- CHANGE: your GitHub repo URL
+    repoURL: https://github.com/ShubhamDeshmukh-0168/streamhive-microservices.git   # <-- CHANGE: your GitHub repo URL
     targetRevision: main                                        # <-- CHANGE: branch name if different
     path: backend
   destination:
