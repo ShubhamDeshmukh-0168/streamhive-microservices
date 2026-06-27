@@ -20,5 +20,5 @@ variable "db_password" {
   description = "Master password for the RDS MySQL instance"
   type        = string
   sensitive   = true
-  default     = "REPLACE_WITH_A_STRONG_PASSWORD"   # <-- CHANGE: never commit a real password, use TF_VAR_db_password env var or a secrets manager instead
+  default     = "Cloud123"   # <-- CHANGE: never commit a real password, use TF_VAR_db_password env var or a secrets manager instead
 }
