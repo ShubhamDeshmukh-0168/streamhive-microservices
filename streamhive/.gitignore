@@ -1,0 +1,13 @@
+# Terraform
+EKS-Terraform/.terraform/
+EKS-Terraform/.terraform.lock.hcl
+EKS-Terraform/terraform.tfstate
+EKS-Terraform/terraform.tfstate.backup
+*.tfvars
+
+# Secrets
+.env
+*.pem
+
+# OS junk
+.DS_Store
