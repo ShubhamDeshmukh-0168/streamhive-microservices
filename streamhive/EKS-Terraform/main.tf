@@ -215,7 +215,7 @@ resource "aws_security_group" "bastion_sg" {
 }
 
 resource "aws_instance" "hive_bastion" {
-  ami                    = "ami-0c55b159cbfafe1f0"   # <-- CHANGE: use a current Amazon Linux 2023 AMI ID for your region
+  ami                    = "ami-0cb473a1f3c06c13d"   # <-- CHANGE: use a current Amazon Linux 2023 AMI ID for your region
   instance_type           = "t3.micro"
   subnet_id               = aws_subnet.public_subnet[0].id
   vpc_security_group_ids  = [aws_security_group.bastion_sg.id]
