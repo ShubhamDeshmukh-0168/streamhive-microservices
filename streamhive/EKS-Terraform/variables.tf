@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "bastion_key_name" {
   description = "EC2 key pair name used to SSH into the bastion host"
   type        = string
-  default     = "REPLACE_WITH_YOUR_KEY_PAIR_NAME"   # <-- CHANGE: must exist in your AWS account already
+  default     = "streamhive-bastion-key"   # <-- CHANGE: must exist in your AWS account already
 }
 
 variable "db_username" {
