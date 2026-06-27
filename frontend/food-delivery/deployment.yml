@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: food-delivery-container
-          image: 637423282941.dkr.ecr.us-west-2.amazonaws.com/streamhive-food-delivery:a328ef635b908eab0c66fe5c79a3168c07760782
+          image: 637423282941.dkr.ecr.us-west-2.amazonaws.com/streamhive-food-delivery:4003ccdbb26d1cd94a98919326a6c039b0f15937
           ports:
             - containerPort: 80
 
