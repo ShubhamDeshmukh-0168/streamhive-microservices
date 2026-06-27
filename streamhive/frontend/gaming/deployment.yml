@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: gaming-container
-          image: 876042377013.dkr.ecr.us-west-2.amazonaws.com/streamhive-gaming:latest
+          image: 637423282941.dkr.ecr.us-west-2.amazonaws.com/streamhive-gaming:latest
           ports:
             - containerPort: 80
 
