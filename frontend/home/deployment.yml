@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: home-container
-          image: 637423282941.dkr.ecr.us-west-2.amazonaws.com/streamhive-home:4003ccdbb26d1cd94a98919326a6c039b0f15937
+          image: 891376951737.dkr.ecr.us-west-2.amazonaws.com/streamhive-home:4b26d39583047a482bdcf8455c77ed8c343b7fde
           ports:
             - containerPort: 80
 
