@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: us-west-2                                   # <-- CHANGE: your AWS region
-  ECR_REGISTRY: 637423282941.dkr.ecr.us-west-2.amazonaws.com   # <-- CHANGE: your AWS account ID + region
+  ECR_REGISTRY: 891376951737.dkr.ecr.us-west-2.amazonaws.com   # <-- CHANGE: your AWS account ID + region
   FRONTEND_SERVICES: "home movies music gaming food-delivery streamwallet"
   BACKEND_SERVICE: "core-api"
 
