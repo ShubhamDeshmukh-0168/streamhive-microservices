@@ -7,42 +7,167 @@
   header{padding:20px 40px;background:#06140c;display:flex;justify-content:space-between;align-items:center;}
   header h1{color:#1ed760;margin:0;}
   a.back{color:#999;text-decoration:none;font-size:13px;}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px;padding:40px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:18px;padding:40px;}
   .card{background:#13291c;border-radius:10px;padding:14px;cursor:pointer;transition:.2s;}
   .card:hover{background:#1c3a27;}
-  .card img{width:100%;border-radius:8px;height:150px;object-fit:cover;}
+  .card .thumb{width:100%;height:150px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:42px;}
   .card h4{margin:10px 0 2px;font-size:14px;}
   .card p{color:#9c9;font-size:12px;margin:0;}
-  button{background:#1ed760;color:#06140c;border:none;padding:6px 10px;border-radius:20px;font-size:12px;margin-top:8px;cursor:pointer;font-weight:bold;}
+  .free-tag{display:inline-block;background:#1ed760;color:#06140c;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;}
+  button.play{background:#1ed760;color:#06140c;border:none;padding:7px 10px;border-radius:20px;font-size:12px;margin-top:8px;cursor:pointer;font-weight:bold;width:100%;}
+
+  #player-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:#0d2818;padding:14px 30px;align-items:center;gap:16px;border-top:1px solid #1ed760;}
+  #player-bar.show{display:flex;}
+  #player-bar span{font-size:13px;}
+  #player-bar audio{flex:1;}
+  #player-bar button{background:none;border:none;color:#fff;cursor:pointer;}
+
+  /* Auth overlay */
+  #auth-overlay{position:fixed;inset:0;background:#05050a;z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;}
+  #auth-overlay .panel{background:#15152a;padding:30px;border-radius:12px;width:340px;color:#eee;}
+  #auth-overlay .tabs{display:flex;margin-bottom:16px;}
+  #auth-overlay .tabs button{flex:1;padding:8px;border:none;color:#fff;cursor:pointer;}
+  #auth-overlay input{width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#fff;box-sizing:border-box;}
+  #auth-overlay .primary-btn{width:100%;padding:10px;background:#a855f7;border:none;border-radius:6px;color:#fff;font-weight:bold;cursor:pointer;}
+  #auth-overlay .otp-btn{width:100%;padding:10px;background:#1ed760;border:none;border-radius:6px;color:#06140c;font-weight:bold;cursor:pointer;margin-bottom:8px;}
+  #auth-overlay .msg{font-size:12px;color:#f87171;min-height:16px;}
+  #auth-overlay h3{margin:0 0 14px;color:#a855f7;text-align:center;}
 </style>
 </head>
 <body>
+
+<div id="auth-overlay">
+  <div class="panel">
+    <h3>🐝 Welcome to StreamHive</h3>
+    <div class="tabs">
+      <button id="tab-login" onclick="showTab('login')" style="background:#a855f7;border-radius:6px 0 0 6px;">Login</button>
+      <button id="tab-signup" onclick="showTab('signup')" style="background:#222;border-radius:0 6px 6px 0;">Signup</button>
+    </div>
+    <div id="login-panel">
+      <input id="login-email" placeholder="Email" />
+      <input id="login-password" type="password" placeholder="Password" />
+      <div id="login-otp-wrap" style="display:none;">
+        <input id="login-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifyLoginOtp()">Verify OTP</button>
+      </div>
+      <button class="primary-btn" onclick="requestLogin()">Login</button>
+      <p class="msg" id="login-msg"></p>
+    </div>
+    <div id="signup-panel" style="display:none;">
+      <input id="signup-username" placeholder="Username" />
+      <input id="signup-email" placeholder="Email" />
+      <input id="signup-password" type="password" placeholder="Password (Aa1!...)" />
+      <div id="signup-otp-wrap" style="display:none;">
+        <input id="signup-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifySignupOtp()">Verify & Create Account</button>
+      </div>
+      <button class="primary-btn" onclick="requestSignup()">Sign Up</button>
+      <p class="msg" id="signup-msg"></p>
+    </div>
+  </div>
+</div>
+
 <header><h1>🎵 StreamHive Music</h1><a class="back" href="/">← Back to Hive</a></header>
 <div class="grid" id="albums"></div>
+
+<div id="player-bar">
+  <span id="now-playing">🎵</span>
+  <audio id="audio-el" controls></audio>
+  <button onclick="document.getElementById('player-bar').classList.remove('show')">✕</button>
+</div>
+
 <script>
 const albums = [
-  {id:"al1", title:"Neon Nights", price:49},
-  {id:"al2", title:"Acoustic Mornings", price:39},
-  {id:"al3", title:"Bass Drop Vol.3", price:59},
-  {id:"al4", title:"Lo-Fi Hive", price:29},
+  {id:"al1", title:"Neon Nights", icon:"🌃", color:"#0e3b2c", track:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"},
+  {id:"al2", title:"Acoustic Mornings", icon:"☕", color:"#2c3b0e", track:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"},
+  {id:"al3", title:"Bass Drop Vol.3", icon:"🔊", color:"#3b0e2c", track:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"},
+  {id:"al4", title:"Lo-Fi Hive", icon:"🐝", color:"#0e2c3b", track:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3"},
 ];
 const el = document.getElementById('albums');
 albums.forEach(a => {
   el.innerHTML += `<div class="card">
-    <img src="https://picsum.photos/seed/${a.id}/180/150" />
-    <h4>${a.title}</h4><p>Album · Rs. ${a.price}</p>
-    <button onclick="addToWatchlist('${a.id}','${a.title}',${a.price})">+ Add</button>
+    <div class="thumb" style="background:${a.color};">${a.icon}</div>
+    <h4>${a.title}</h4><p><span class="free-tag">FREE</span></p>
+    <button class="play" onclick="playTrack('${a.track}','${a.title}')">▶ Play Free</button>
   </div>`;
 });
-function addToWatchlist(id, title, price){
-  const email = localStorage.getItem('sh_email') || prompt('Enter your email to continue:');
-  if(!email) return;
-  localStorage.setItem('sh_email', email);
-  fetch('/api/watchlist/items', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({email, item_id:id, item_title:title, price, category:'music'})
-  }).then(r=>r.json()).then(d=>alert(d.message || d.error));
+
+function playTrack(url, title){
+  requireAuth(() => {
+    const bar = document.getElementById('player-bar');
+    const audio = document.getElementById('audio-el');
+    document.getElementById('now-playing').textContent = '🎵 ' + title;
+    audio.src = url;
+    audio.play();
+    bar.classList.add('show');
+    logActivity('music', 'play:' + title);
+  });
 }
+
+// ---------- Auth gate (shared logic) ----------
+function showTab(tab){
+  document.getElementById('login-panel').style.display = tab==='login' ? 'block':'none';
+  document.getElementById('signup-panel').style.display = tab==='signup' ? 'block':'none';
+  document.getElementById('tab-login').style.background = tab==='login' ? '#a855f7':'#222';
+  document.getElementById('tab-signup').style.background = tab==='signup' ? '#a855f7':'#222';
+}
+function checkAuth(){
+  const session = JSON.parse(localStorage.getItem('sh_session') || 'null');
+  if(session && session.email){
+    document.getElementById('auth-overlay').style.display='none';
+    localStorage.setItem('sh_email', session.email);
+    return true;
+  }
+  document.getElementById('auth-overlay').style.display='flex';
+  return false;
+}
+function requireAuth(callback){
+  if(checkAuth()){ callback(); } else { showTab('login'); }
+}
+function requestSignup(){
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  fetch('/api/signup/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ document.getElementById('signup-otp-wrap').style.display='block'; }
+    });
+}
+function verifySignupOtp(){
+  const email = document.getElementById('signup-email').value.trim();
+  const otp = document.getElementById('signup-otp').value.trim();
+  fetch('/api/signup/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ showTab('login'); }
+    });
+}
+function requestLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  fetch('/api/login/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.otp_required){ document.getElementById('login-otp-wrap').style.display='block'; }
+      else if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+function verifyLoginOtp(){
+  const email = document.getElementById('login-email').value.trim();
+  const otp = document.getElementById('login-otp').value.trim();
+  fetch('/api/login/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+function logActivity(appName, note){
+  const email = localStorage.getItem('sh_email');
+  if(!email) return;
+  fetch('/api/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email, app_name:appName, note})}).catch(()=>{});
+}
+checkAuth();
 </script>
 </body>
 </html>

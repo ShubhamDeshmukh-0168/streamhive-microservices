@@ -4,7 +4,11 @@ metadata:
   name: hive-ingress
   annotations:
     kubernetes.io/ingress.class: nginx
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    # NOTE: no rewrite-target here on purpose. With rewrite-target: / every request
+    # (including /api/... calls) was being rewritten to "/" before reaching the
+    # backend, which broke POST /api/watchlist/items, /api/bookings, etc.
+    # Each frontend's nginx.conf already falls back to index.html via try_files,
+    # so dropping the rewrite keeps both pages and /api working correctly.
 spec:
   rules:
     - http:

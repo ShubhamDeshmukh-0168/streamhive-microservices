@@ -18,9 +18,53 @@
   .card .icon { font-size:32px; }
   .card h3 { margin:10px 0 4px; }
   .card p { color:#999; font-size:13px; margin:0; }
+  .free-tag{display:inline-block;background:#1ed760;color:#06140c;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;margin-top:6px;}
+
+  /* Auth overlay */
+  #auth-overlay{position:fixed;inset:0;background:#05050a;z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;}
+  #auth-overlay .panel{background:#15152a;padding:30px;border-radius:12px;width:340px;color:#eee;}
+  #auth-overlay .tabs{display:flex;margin-bottom:16px;}
+  #auth-overlay .tabs button{flex:1;padding:8px;border:none;color:#fff;cursor:pointer;}
+  #auth-overlay input{width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#fff;box-sizing:border-box;}
+  #auth-overlay .primary-btn{width:100%;padding:10px;background:#a855f7;border:none;border-radius:6px;color:#fff;font-weight:bold;cursor:pointer;}
+  #auth-overlay .otp-btn{width:100%;padding:10px;background:#1ed760;border:none;border-radius:6px;color:#06140c;font-weight:bold;cursor:pointer;margin-bottom:8px;}
+  #auth-overlay .msg{font-size:12px;color:#f87171;min-height:16px;}
+  #auth-overlay h3{margin:0 0 14px;color:#a855f7;text-align:center;}
 </style>
 </head>
 <body>
+
+<div id="auth-overlay">
+  <div class="panel">
+    <h3>🐝 Welcome to StreamHive</h3>
+    <div class="tabs">
+      <button id="tab-login" onclick="showTab('login')" style="background:#a855f7;border-radius:6px 0 0 6px;">Login</button>
+      <button id="tab-signup" onclick="showTab('signup')" style="background:#222;border-radius:0 6px 6px 0;">Signup</button>
+    </div>
+    <div id="login-panel">
+      <input id="login-email" placeholder="Email" />
+      <input id="login-password" type="password" placeholder="Password" />
+      <div id="login-otp-wrap" style="display:none;">
+        <input id="login-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifyLoginOtp()">Verify OTP</button>
+      </div>
+      <button class="primary-btn" onclick="requestLogin()">Login</button>
+      <p class="msg" id="login-msg"></p>
+    </div>
+    <div id="signup-panel" style="display:none;">
+      <input id="signup-username" placeholder="Username" />
+      <input id="signup-email" placeholder="Email" />
+      <input id="signup-password" type="password" placeholder="Password (Aa1!...)" />
+      <div id="signup-otp-wrap" style="display:none;">
+        <input id="signup-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifySignupOtp()">Verify & Create Account</button>
+      </div>
+      <button class="primary-btn" onclick="requestSignup()">Sign Up</button>
+      <p class="msg" id="signup-msg"></p>
+    </div>
+  </div>
+</div>
+
 <header>
   <h1>🐝 StreamHive</h1>
   <nav>
@@ -29,19 +73,82 @@
     <a href="/gaming">Gaming</a>
     <a href="/food-delivery">Food</a>
     <a href="/streamwallet">Wallet</a>
+    <a href="#" onclick="logout()">Logout</a>
   </nav>
 </header>
 <section class="hero">
-  <h2>Everything you stream, order, and play — in one hive.</h2>
-  <p>Movies, music, games, food and rides — one account, one wallet, zero hassle.</p>
+  <h2>Everything you stream, play, and order — in one hive.</h2>
+  <p>Movies, music and games are completely free. Only food delivery is paid — pay with StreamWallet.</p>
 </section>
 <section class="grid">
-  <div class="card" onclick="location.href='/movies'"><div class="icon">🎬</div><h3>Movies</h3><p>Rent & stream new releases</p></div>
-  <div class="card" onclick="location.href='/music'"><div class="icon">🎵</div><h3>Music</h3><p>Curated playlists & albums</p></div>
-  <div class="card" onclick="location.href='/gaming'"><div class="icon">🎮</div><h3>Gaming</h3><p>Cloud play, no downloads</p></div>
+  <div class="card" onclick="location.href='/movies'"><div class="icon">🎬</div><h3>Movies</h3><p>Watch free, no card needed</p><span class="free-tag">FREE</span></div>
+  <div class="card" onclick="location.href='/music'"><div class="icon">🎵</div><h3>Music</h3><p>Stream playlists, totally free</p><span class="free-tag">FREE</span></div>
+  <div class="card" onclick="location.href='/gaming'"><div class="icon">🎮</div><h3>Gaming</h3><p>Play in-browser, no purchase</p><span class="free-tag">FREE</span></div>
   <div class="card" onclick="location.href='/food-delivery'"><div class="icon">🍔</div><h3>Food Delivery</h3><p>Order from local favorites</p></div>
-  <div class="card" onclick="location.href='/streamwallet'"><div class="icon">💳</div><h3>StreamWallet</h3><p>Top up & manage payments</p></div>
+  <div class="card" onclick="location.href='/streamwallet'"><div class="icon">💳</div><h3>StreamWallet</h3><p>Top up to pay for food orders</p></div>
 </section>
-<script src="/image-fallback.js"></script>
+
+<script>
+function showTab(tab){
+  document.getElementById('login-panel').style.display = tab==='login' ? 'block':'none';
+  document.getElementById('signup-panel').style.display = tab==='signup' ? 'block':'none';
+  document.getElementById('tab-login').style.background = tab==='login' ? '#a855f7':'#222';
+  document.getElementById('tab-signup').style.background = tab==='signup' ? '#a855f7':'#222';
+}
+function checkAuth(){
+  const session = JSON.parse(localStorage.getItem('sh_session') || 'null');
+  if(session && session.email){
+    document.getElementById('auth-overlay').style.display='none';
+    localStorage.setItem('sh_email', session.email);
+    return true;
+  }
+  document.getElementById('auth-overlay').style.display='flex';
+  return false;
+}
+function logout(){
+  localStorage.removeItem('sh_session');
+  localStorage.removeItem('sh_email');
+  checkAuth();
+}
+function requestSignup(){
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  fetch('/api/signup/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ document.getElementById('signup-otp-wrap').style.display='block'; }
+    });
+}
+function verifySignupOtp(){
+  const email = document.getElementById('signup-email').value.trim();
+  const otp = document.getElementById('signup-otp').value.trim();
+  fetch('/api/signup/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ showTab('login'); }
+    });
+}
+function requestLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  fetch('/api/login/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.otp_required){ document.getElementById('login-otp-wrap').style.display='block'; }
+      else if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+function verifyLoginOtp(){
+  const email = document.getElementById('login-email').value.trim();
+  const otp = document.getElementById('login-otp').value.trim();
+  fetch('/api/login/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+checkAuth();
+</script>
 </body>
 </html>

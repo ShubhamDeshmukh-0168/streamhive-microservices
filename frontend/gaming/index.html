@@ -9,39 +9,204 @@
   a.back{color:#888;text-decoration:none;font-size:13px;}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px;padding:40px;}
   .card{background:#10102a;border:1px solid #2d2d5c;border-radius:6px;padding:14px;}
-  .card img{width:100%;border-radius:4px;height:160px;object-fit:cover;}
+  .card .thumb{width:100%;height:140px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:42px;}
   .card h4{color:#00f0ff;margin:10px 0 2px;font-size:14px;}
-  .card p{color:#9999cc;font-size:12px;margin:0;}
-  button{background:#ff00aa;color:#fff;border:none;padding:6px 10px;border-radius:4px;font-size:12px;margin-top:8px;cursor:pointer;}
+  .free-tag{display:inline-block;background:#1ed760;color:#06140c;font-size:11px;font-weight:bold;padding:2px 8px;border-radius:10px;}
+  button.play{background:#ff00aa;color:#fff;border:none;padding:7px 10px;border-radius:4px;font-size:12px;margin-top:8px;cursor:pointer;width:100%;}
+
+  #game-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9000;align-items:center;justify-content:center;flex-direction:column;}
+  #game-modal canvas{background:#000;border:2px solid #00f0ff;}
+  #game-modal .hud{color:#00f0ff;margin-bottom:10px;font-size:14px;}
+  #game-modal button.close{margin-top:12px;background:#ff00aa;border:none;color:#fff;padding:8px 16px;border-radius:6px;cursor:pointer;}
+
+  /* Auth overlay */
+  #auth-overlay{position:fixed;inset:0;background:#05050a;z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;}
+  #auth-overlay .panel{background:#15152a;padding:30px;border-radius:12px;width:340px;color:#eee;}
+  #auth-overlay .tabs{display:flex;margin-bottom:16px;}
+  #auth-overlay .tabs button{flex:1;padding:8px;border:none;color:#fff;cursor:pointer;}
+  #auth-overlay input{width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#fff;box-sizing:border-box;}
+  #auth-overlay .primary-btn{width:100%;padding:10px;background:#a855f7;border:none;border-radius:6px;color:#fff;font-weight:bold;cursor:pointer;}
+  #auth-overlay .otp-btn{width:100%;padding:10px;background:#1ed760;border:none;border-radius:6px;color:#06140c;font-weight:bold;cursor:pointer;margin-bottom:8px;}
+  #auth-overlay .msg{font-size:12px;color:#f87171;min-height:16px;}
+  #auth-overlay h3{margin:0 0 14px;color:#a855f7;text-align:center;}
 </style>
 </head>
 <body>
+
+<div id="auth-overlay">
+  <div class="panel">
+    <h3>🐝 Welcome to StreamHive</h3>
+    <div class="tabs">
+      <button id="tab-login" onclick="showTab('login')" style="background:#a855f7;border-radius:6px 0 0 6px;">Login</button>
+      <button id="tab-signup" onclick="showTab('signup')" style="background:#222;border-radius:0 6px 6px 0;">Signup</button>
+    </div>
+    <div id="login-panel">
+      <input id="login-email" placeholder="Email" />
+      <input id="login-password" type="password" placeholder="Password" />
+      <div id="login-otp-wrap" style="display:none;">
+        <input id="login-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifyLoginOtp()">Verify OTP</button>
+      </div>
+      <button class="primary-btn" onclick="requestLogin()">Login</button>
+      <p class="msg" id="login-msg"></p>
+    </div>
+    <div id="signup-panel" style="display:none;">
+      <input id="signup-username" placeholder="Username" />
+      <input id="signup-email" placeholder="Email" />
+      <input id="signup-password" type="password" placeholder="Password (Aa1!...)" />
+      <div id="signup-otp-wrap" style="display:none;">
+        <input id="signup-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifySignupOtp()">Verify & Create Account</button>
+      </div>
+      <button class="primary-btn" onclick="requestSignup()">Sign Up</button>
+      <p class="msg" id="signup-msg"></p>
+    </div>
+  </div>
+</div>
+
 <header><h1>🎮 StreamHive Gaming</h1><a class="back" href="/">← Back to Hive</a></header>
 <div class="grid" id="games"></div>
+
+<div id="game-modal">
+  <div class="hud">Use arrow keys — Score: <span id="score">0</span></div>
+  <canvas id="game-canvas" width="400" height="400"></canvas>
+  <button class="close" onclick="closeGame()">Close Game</button>
+</div>
+
 <script>
 const games = [
-  {id:"gm1", title:"Nebula Raiders", price:399},
-  {id:"gm2", title:"Pixel Kingdoms", price:199},
-  {id:"gm3", title:"Hivecraft Online", price:0},
-  {id:"gm4", title:"Drift Legends X", price:299},
+  {id:"gm1", title:"Nebula Raiders", icon:"🚀", color:"#1a0e3b"},
+  {id:"gm2", title:"Pixel Kingdoms", icon:"🏰", color:"#3b1a0e"},
+  {id:"gm3", title:"Hivecraft Online", icon:"🐝", color:"#3b2a0e"},
+  {id:"gm4", title:"Drift Legends X", icon:"🏎️", color:"#0e1a3b"},
 ];
 const el = document.getElementById('games');
 games.forEach(g => {
   el.innerHTML += `<div class="card">
-    <img src="https://picsum.photos/seed/${g.id}/200/160" />
-    <h4>${g.title}</h4><p>${g.price === 0 ? 'Free to Play' : 'Rs. ' + g.price}</p>
-    <button onclick="addToWatchlist('${g.id}','${g.title}',${g.price})">+ Add</button>
+    <div class="thumb" style="background:${g.color};">${g.icon}</div>
+    <h4>${g.title}</h4><p><span class="free-tag">FREE</span></p>
+    <button class="play" onclick="playGame('${g.title}')">▶ Play Now</button>
   </div>`;
 });
-function addToWatchlist(id, title, price){
-  const email = localStorage.getItem('sh_email') || prompt('Enter your email to continue:');
-  if(!email) return;
-  localStorage.setItem('sh_email', email);
-  fetch('/api/watchlist/items', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({email, item_id:id, item_title:title, price, category:'gaming'})
-  }).then(r=>r.json()).then(d=>alert(d.message || d.error));
+
+// ---------- Simple playable Snake game (canvas) ----------
+let gameInterval, snake, dir, food, score;
+function playGame(title){
+  requireAuth(() => {
+    document.getElementById('game-modal').style.display = 'flex';
+    startSnake();
+    logActivity('gaming', 'play:' + title);
+  });
 }
+function closeGame(){
+  clearInterval(gameInterval);
+  document.getElementById('game-modal').style.display = 'none';
+}
+function startSnake(){
+  const canvas = document.getElementById('game-canvas');
+  const ctx = canvas.getContext('2d');
+  const grid = 20;
+  snake = [{x:8,y:8}];
+  dir = {x:1,y:0};
+  food = {x:14,y:8};
+  score = 0;
+  document.getElementById('score').textContent = score;
+
+  document.onkeydown = (e) => {
+    if(e.key==='ArrowUp' && dir.y===0) dir={x:0,y:-1};
+    else if(e.key==='ArrowDown' && dir.y===0) dir={x:0,y:1};
+    else if(e.key==='ArrowLeft' && dir.x===0) dir={x:-1,y:0};
+    else if(e.key==='ArrowRight' && dir.x===0) dir={x:1,y:0};
+  };
+
+  clearInterval(gameInterval);
+  gameInterval = setInterval(() => {
+    const head = {x: snake[0].x + dir.x, y: snake[0].y + dir.y};
+    if(head.x<0 || head.y<0 || head.x>=20 || head.y>=20 || snake.some(s=>s.x===head.x&&s.y===head.y)){
+      clearInterval(gameInterval);
+      alert('Game over! Score: ' + score);
+      return;
+    }
+    snake.unshift(head);
+    if(head.x===food.x && head.y===food.y){
+      score++;
+      document.getElementById('score').textContent = score;
+      food = {x: Math.floor(Math.random()*20), y: Math.floor(Math.random()*20)};
+    } else {
+      snake.pop();
+    }
+    ctx.fillStyle = '#000'; ctx.fillRect(0,0,400,400);
+    ctx.fillStyle = '#ff00aa';
+    snake.forEach(s => ctx.fillRect(s.x*grid, s.y*grid, grid-2, grid-2));
+    ctx.fillStyle = '#00f0ff';
+    ctx.fillRect(food.x*grid, food.y*grid, grid-2, grid-2);
+  }, 120);
+}
+
+// ---------- Auth gate (shared logic) ----------
+function showTab(tab){
+  document.getElementById('login-panel').style.display = tab==='login' ? 'block':'none';
+  document.getElementById('signup-panel').style.display = tab==='signup' ? 'block':'none';
+  document.getElementById('tab-login').style.background = tab==='login' ? '#a855f7':'#222';
+  document.getElementById('tab-signup').style.background = tab==='signup' ? '#a855f7':'#222';
+}
+function checkAuth(){
+  const session = JSON.parse(localStorage.getItem('sh_session') || 'null');
+  if(session && session.email){
+    document.getElementById('auth-overlay').style.display='none';
+    localStorage.setItem('sh_email', session.email);
+    return true;
+  }
+  document.getElementById('auth-overlay').style.display='flex';
+  return false;
+}
+function requireAuth(callback){
+  if(checkAuth()){ callback(); } else { showTab('login'); }
+}
+function requestSignup(){
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  fetch('/api/signup/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ document.getElementById('signup-otp-wrap').style.display='block'; }
+    });
+}
+function verifySignupOtp(){
+  const email = document.getElementById('signup-email').value.trim();
+  const otp = document.getElementById('signup-otp').value.trim();
+  fetch('/api/signup/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ showTab('login'); }
+    });
+}
+function requestLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  fetch('/api/login/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.otp_required){ document.getElementById('login-otp-wrap').style.display='block'; }
+      else if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+function verifyLoginOtp(){
+  const email = document.getElementById('login-email').value.trim();
+  const otp = document.getElementById('login-otp').value.trim();
+  fetch('/api/login/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+function logActivity(appName, note){
+  const email = localStorage.getItem('sh_email');
+  if(!email) return;
+  fetch('/api/activity',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email, app_name:appName, note})}).catch(()=>{});
+}
+checkAuth();
 </script>
 </body>
 </html>

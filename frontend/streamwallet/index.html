@@ -12,15 +12,56 @@
   label{display:block;margin:14px 0 6px;font-size:13px;color:#999;}
   input,select{width:100%;padding:10px;border-radius:6px;border:1px solid #30363d;background:#0d1117;color:#fff;box-sizing:border-box;}
   button{width:100%;background:#238636;color:#fff;border:none;padding:12px;border-radius:6px;margin-top:20px;cursor:pointer;font-weight:bold;}
+
+  /* Auth overlay */
+  #auth-overlay{position:fixed;inset:0;background:#05050a;z-index:9999;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;}
+  #auth-overlay .panel2{background:#15152a;padding:30px;border-radius:12px;width:340px;color:#eee;}
+  #auth-overlay .tabs{display:flex;margin-bottom:16px;}
+  #auth-overlay .tabs button{flex:1;padding:8px;border:none;color:#fff;cursor:pointer;margin-top:0;}
+  #auth-overlay input{width:100%;padding:8px;margin-bottom:8px;border-radius:6px;border:1px solid #333;background:#0d0d1a;color:#fff;box-sizing:border-box;}
+  #auth-overlay .primary-btn{width:100%;padding:10px;background:#a855f7;border:none;border-radius:6px;color:#fff;font-weight:bold;cursor:pointer;margin-top:0;}
+  #auth-overlay .otp-btn{width:100%;padding:10px;background:#1ed760;border:none;border-radius:6px;color:#06140c;font-weight:bold;cursor:pointer;margin-bottom:8px;margin-top:0;}
+  #auth-overlay .msg{font-size:12px;color:#f87171;min-height:16px;}
+  #auth-overlay h3{margin:0 0 14px;color:#a855f7;text-align:center;}
 </style>
 </head>
 <body>
+
+<div id="auth-overlay">
+  <div class="panel2">
+    <h3>🐝 Welcome to StreamHive</h3>
+    <div class="tabs">
+      <button id="tab-login" onclick="showTab('login')" style="background:#a855f7;border-radius:6px 0 0 6px;">Login</button>
+      <button id="tab-signup" onclick="showTab('signup')" style="background:#222;border-radius:0 6px 6px 0;">Signup</button>
+    </div>
+    <div id="login-panel">
+      <input id="login-email" placeholder="Email" />
+      <input id="login-password" type="password" placeholder="Password" />
+      <div id="login-otp-wrap" style="display:none;">
+        <input id="login-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifyLoginOtp()">Verify OTP</button>
+      </div>
+      <button class="primary-btn" onclick="requestLogin()">Login</button>
+      <p class="msg" id="login-msg"></p>
+    </div>
+    <div id="signup-panel" style="display:none;">
+      <input id="signup-username" placeholder="Username" />
+      <input id="signup-email" placeholder="Email" />
+      <input id="signup-password" type="password" placeholder="Password (Aa1!...)" />
+      <div id="signup-otp-wrap" style="display:none;">
+        <input id="signup-otp" placeholder="Enter OTP from email" />
+        <button class="otp-btn" onclick="verifySignupOtp()">Verify & Create Account</button>
+      </div>
+      <button class="primary-btn" onclick="requestSignup()">Sign Up</button>
+      <p class="msg" id="signup-msg"></p>
+    </div>
+  </div>
+</div>
+
 <header><h1>💳 StreamWallet</h1><a class="back" href="/">← Back to Hive</a></header>
 <div class="panel">
   <div class="balance">₹ Wallet</div>
-  <p style="color:#888;font-size:13px;">Top up your StreamHive wallet to pay for bookings instantly.</p>
-  <label>Email</label>
-  <input id="email" placeholder="you@example.com" />
+  <p style="color:#888;font-size:13px;">Top up your StreamHive wallet — used only for food delivery orders. Movies, music and games are always free.</p>
   <label>Amount (₹)</label>
   <input id="amount" type="number" placeholder="500" />
   <label>Payment Method</label>
@@ -34,16 +75,75 @@
 </div>
 <script>
 function topUp(){
-  const email = document.getElementById('email').value.trim();
-  const amount = parseFloat(document.getElementById('amount').value);
-  const payment_method = document.getElementById('method').value;
-  if(!email || !amount){ alert('Enter email and amount'); return; }
-  localStorage.setItem('sh_email', email);
-  fetch('/api/wallet/topups', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({email, amount, payment_method})
-  }).then(r=>r.json()).then(d=>alert(d.message || d.error));
+  requireAuth(() => {
+    const email = localStorage.getItem('sh_email');
+    const amount = parseFloat(document.getElementById('amount').value);
+    const payment_method = document.getElementById('method').value;
+    if(!amount){ alert('Enter an amount'); return; }
+    fetch('/api/wallet/topups', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, amount, payment_method})
+    }).then(r=>r.json()).then(d=>alert(d.message || d.error));
+  });
 }
+function showTab(tab){
+  document.getElementById('login-panel').style.display = tab==='login' ? 'block':'none';
+  document.getElementById('signup-panel').style.display = tab==='signup' ? 'block':'none';
+  document.getElementById('tab-login').style.background = tab==='login' ? '#a855f7':'#222';
+  document.getElementById('tab-signup').style.background = tab==='signup' ? '#a855f7':'#222';
+}
+function checkAuth(){
+  const session = JSON.parse(localStorage.getItem('sh_session') || 'null');
+  if(session && session.email){
+    document.getElementById('auth-overlay').style.display='none';
+    localStorage.setItem('sh_email', session.email);
+    return true;
+  }
+  document.getElementById('auth-overlay').style.display='flex';
+  return false;
+}
+function requireAuth(callback){
+  if(checkAuth()){ callback(); } else { showTab('login'); }
+}
+function requestSignup(){
+  const username = document.getElementById('signup-username').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  fetch('/api/signup/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username,email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ document.getElementById('signup-otp-wrap').style.display='block'; }
+    });
+}
+function verifySignupOtp(){
+  const email = document.getElementById('signup-email').value.trim();
+  const otp = document.getElementById('signup-otp').value.trim();
+  fetch('/api/signup/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('signup-msg').textContent = d.message || d.error;
+      if(d.message){ showTab('login'); }
+    });
+}
+function requestLogin(){
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  fetch('/api/login/request',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,password})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.otp_required){ document.getElementById('login-otp-wrap').style.display='block'; }
+      else if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+function verifyLoginOtp(){
+  const email = document.getElementById('login-email').value.trim();
+  const otp = document.getElementById('login-otp').value.trim();
+  fetch('/api/login/verify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,otp})})
+    .then(r=>r.json()).then(d=>{
+      document.getElementById('login-msg').textContent = d.message || d.error;
+      if(d.user){ localStorage.setItem('sh_session', JSON.stringify({email})); checkAuth(); }
+    });
+}
+checkAuth();
 </script>
 </body>
 </html>
