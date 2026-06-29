@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: movies-container
-          image: 891376951737.dkr.ecr.us-west-2.amazonaws.com/streamhive-movies:4b26d39583047a482bdcf8455c77ed8c343b7fde
+          image: 891376951737.dkr.ecr.us-west-2.amazonaws.com/streamhive-movies:8efb49f94f771d36a853bb73a8f0d56bb9b06b00
           ports:
             - containerPort: 80
 
