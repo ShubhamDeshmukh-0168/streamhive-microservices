@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: core-api-config
 data:
-  DB_HOST: "hive-rds.c9oo80c6ox1b.us-west-2.rds.amazonaws.com"
+  DB_HOST: "hive-rds.cl84s6yy4jm6.us-west-2.rds.amazonaws.com"
   DB_USER: "admin"
   DB_PASSWORD: "Cloud123"
   DB_NAME: "streamhive"
